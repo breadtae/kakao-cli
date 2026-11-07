@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "kakao-mac": {
+      "command": "/absolute/path/to/kakao-cli/.build/release/kakao",
+      "args": ["mcp"],
+      "timeout": 120000,
+      "trust": false
+    }
+  }
+}

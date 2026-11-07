@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "kakao-mac": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/.build/release/kakao",
+      "args": ["mcp"]
+    }
+  }
+}

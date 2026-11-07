@@ -1,0 +1,6 @@
+[mcp_servers.kakao-mac]
+command = "/absolute/path/to/kakao-cli/.build/release/kakao"
+args = ["mcp"]
+startup_timeout_sec = 10
+tool_timeout_sec = 120
+default_tools_approval_mode = "prompt"
