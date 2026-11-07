@@ -32,16 +32,35 @@ cd kakao-cli
 
 1. macOS용 카카오톡을 실행하고 직접 로그인합니다. 잠금 화면이나 확인창은 닫습니다.
 2. Swift 6.0 이상과 Xcode Command Line Tools가 필요합니다. 실행 대상은 macOS 13 이상입니다.
-3. 이 프로젝트 폴더에서 `make build`를 실행합니다. 첫 빌드에는 의존성 다운로드를 위한 인터넷 연결이 필요합니다.
+3. 아래 Homebrew 설치 또는 소스 빌드 중 하나를 선택합니다. 첫 빌드에는 의존성 다운로드를 위한 인터넷 연결이 필요합니다.
 4. `.build/release/kakao status --request-access`로 권한 안내를 표시합니다.
 5. **시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용**에서 실행 중인 터미널 또는 VS Code를 허용합니다. macOS가 실행 파일을 별도로 표시하면 해당 항목을 허용합니다.
 6. `.build/release/kakao status --json`의 `accessibilityGranted`가 `true`인지 확인합니다.
 
+Homebrew로 설치했다면 위 명령의 `.build/release/kakao` 대신 `kakao`를 사용합니다.
 전체 디스크 접근 권한, 카카오 비밀번호, API 키는 필요하지 않습니다.
 빌드나 설치 위치를 바꾼 뒤 권한이 인식되지 않으면 해당 실행 위치에서 다시 상태를 확인합니다.
 
 ## 실행과 설치
 
+### Homebrew
+
+```sh
+brew install breadtae/tap/kakao-cli
+kakao --version
+kakao status --json
+```
+
+패키지 이름은 `kakao-cli`, 실행 명령은 `kakao`입니다. 기존의 다른 프로젝트인 `kakaocli`와는 별개입니다.
+현재 배포는 미리 빌드된 바이너리가 아니라 **소스 빌드 방식**입니다. Swift 6.0 이상을 제공하는 Xcode Command Line Tools 또는 Swift 도구 체인과 인터넷 연결이 필요하며, 첫 설치에 시간이 걸릴 수 있습니다.
+카카오톡 앱 설치·로그인과 손쉬운 사용 권한은 사용자가 직접 준비해야 합니다.
+
+업데이트는 `brew update && brew upgrade breadtae/tap/kakao-cli`, 제거는 `brew uninstall kakao-cli`로 수행합니다.
+배포 정의는 [breadtae/homebrew-tap](https://github.com/breadtae/homebrew-tap)에 있습니다.
+
+### 소스 빌드
+
+이 프로젝트 폴더에서 `make build`를 실행합니다.
 설치 없이 `.build/release/kakao --help` 또는 `swift run kakao --help`로 실행할 수 있습니다.
 
 `make install`은 실행 파일을 `~/.local/bin/kakao`에 설치합니다. 관리자 권한은 필요하지 않습니다.
@@ -113,10 +132,11 @@ JSON의 `state: preview`는 미발송입니다.
 인터넷 포트나 외부 접속 주소를 열지 않으며, 이 프로그램 자체에는 LLM API 키가 필요하지 않습니다. 사용할 LLM 앱의 로그인·이용 조건은 별도입니다.
 일반 웹 채팅창에 실행 파일 경로를 입력하는 것만으로 연결되지는 않습니다. **로컬 MCP를 지원하는 Mac 앱 또는 CLI**가 필요합니다.
 
-먼저 `make build`로 최신 실행 파일을 만든 뒤 아래 설정을 적용합니다.
+먼저 Homebrew로 설치하거나 `make build`로 실행 파일을 만든 뒤 아래 설정을 적용합니다.
 `config/`의 파일은 설정 예제입니다. 사용 전에 `command`의 `/absolute/path/to/kakao-cli`를 프로젝트의 실제 절대 경로로 바꾸세요. 프로젝트 폴더에서 `pwd`로 확인할 수 있습니다.
+Homebrew 설치를 사용한다면 `command` 전체를 `command -v kakao`로 확인한 실제 실행 파일의 절대 경로로 바꾸세요.
 이 설정 파일의 `command`에 `~`나 `$PWD`를 넣어도 셸처럼 자동 확장되지 않습니다. 프로젝트를 옮기면 경로를 다시 수정해야 합니다.
-VS Code의 `.vscode/mcp.json`은 `${workspaceFolder}`를 사용하므로 이 프로젝트를 작업 폴더로 열면 경로를 바꾸지 않아도 됩니다.
+VS Code의 `.vscode/mcp.json`은 소스 빌드용 `${workspaceFolder}` 경로를 사용하므로 이 프로젝트를 작업 폴더로 열고 `make build`를 했다면 경로를 바꾸지 않아도 됩니다. Homebrew 실행 파일을 사용하려면 이 파일의 `command`도 해당 절대 경로로 바꾸세요.
 기존 앱 설정을 통째로 덮어쓰지 말고 `kakao-mac` 서버 항목만 병합하세요. 이번 작업에서는 사용자 홈의 앱 설정을 변경하지 않았습니다.
 
 | 앱 | 준비한 설정 | 적용 방법 |
@@ -133,6 +153,8 @@ VS Code의 `.vscode/mcp.json`은 `${workspaceFolder}`를 사용하므로 이 프
 - Claude Code: `claude mcp add --transport stdio --scope user kakao-mac -- "$PWD/.build/release/kakao" mcp`
 - Codex: `codex mcp add kakao-mac -- "$PWD/.build/release/kakao" mcp`
 - Gemini CLI: `gemini mcp add --scope user --timeout 120000 kakao-mac "$PWD/.build/release/kakao" mcp`
+
+Homebrew로 설치했다면 위 명령의 `"$PWD/.build/release/kakao"`를 `"$(command -v kakao)"`로 바꿉니다. 등록 전에 `kakao --version`이 정상 실행되는지 확인하세요.
 
 각 LLM 앱에서 **“카카오톡 상태를 확인해 줘”**로 시작하세요. `kakao_status`의 `accessibilityGranted`가 `false`이면 그 앱을 손쉬운 사용에서 허용해야 합니다. VS Code에서 허용한 권한이 Claude Desktop에도 자동 적용되는 것은 아닙니다.
 CLI형 LLM은 실행한 터미널, 데스크톱형 LLM은 해당 앱 또는 macOS가 안내하는 실행 파일에 권한을 부여합니다.
@@ -160,6 +182,29 @@ CLI형 LLM은 실행한 터미널, 데스크톱형 LLM은 해당 앱 또는 macO
 이 모드에서도 검색·자동 열기는 가능하므로 읽음 처리가 일어날 수 있습니다. 읽음 변화까지 피하려면 조회 시 `auto_open: false`를 사용하고 이미 열린 창만 읽으세요.
 
 SDK가 지원하는 MCP `2025-11-25` 연결 방식을 검증했습니다. 해당 버전과 호환되는 클라이언트가 필요하며, `2026-07-28`만 지원하는 클라이언트용 새 프로토콜은 아직 구현하지 않았습니다.
+
+## 에이전트 스킬
+
+이 CLI 전용 [kakao-cli 스킬](.github/skills/kakao-cli/SKILL.md)을 제공합니다. 기존에 다운로드한 다른 `kakaotalk-mac` 스킬이나 외부 `kakaocli`를 사용하지 않습니다.
+프로젝트 범위 스킬을 지원하는 에이전트는 이 저장소의 `.github/skills/kakao-cli`에서 사용법을 읽을 수 있습니다.
+스킬은 사용법과 안전 절차를 제공하는 문서이며, 실행 파일 설치나 MCP 등록을 자동으로 대신하지 않습니다.
+
+Homebrew 패키지에도 스킬이 포함됩니다. 다른 프로젝트에서도 사용할 개인 스킬로 연결하려면:
+
+```sh
+mkdir -p ~/.agents/skills
+ln -s "$(brew --prefix kakao-cli)/share/kakao-cli/skills/kakao-cli" ~/.agents/skills/kakao-cli
+```
+
+Claude의 개인 스킬 경로에도 연결하려면:
+
+```sh
+mkdir -p ~/.claude/skills
+ln -s "$HOME/.agents/skills/kakao-cli" ~/.claude/skills/kakao-cli
+```
+
+같은 이름의 파일이나 폴더가 이미 있으면 링크 생성이 실패합니다. 기존 스킬을 확인하지 않고 덮어쓰거나 삭제하지 마세요.
+스킬을 사용하는 앱이나 에이전트 세션을 새로 열어 목록을 갱신합니다. Homebrew를 제거하면 개인 스킬 링크도 별도로 제거해야 합니다.
 
 ## 개인정보와 오류 처리
 
